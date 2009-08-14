@@ -64,7 +64,14 @@ class Pickler
     end
 
     def pushable?
-      id || local_body =~ %r{\A(?:#\s*|@[[:punct:]]?(?:http://www\.pivotaltracker\.com/story/new)?[[:punct:]]?(?:\s+@\S+)*\s*)\n[[:upper:]][[:lower:]]+:} ? true : false
+      empty_comment_line = %r{#\s*}
+      new_pivotal_story_url = "http://www\.pivotaltracker\.com/story/new"
+      new_pivotal_story_token = %r{@[[:punct:]]?(?:#{new_pivotal_story_url})?[[:punct:]]?(?:\s+@\S+)*\s*}
+      first_line = %r{\A(?:#{empty_comment_line}|#{new_pivotal_story_token})}
+      cucumber_tag = %r{@\S+}
+      line_of_tags = %r{\s*#{cucumber_tag}(\s+#{cucumber_tag})*\s*}
+      line_of_feature_def = %r{[[:upper:]][[:lower:]]+:}
+      id || local_body =~ %r{\A#{first_line}\n(#{line_of_tags}\n)?#{line_of_feature_def}} ? true : false
     end
 
     def push
